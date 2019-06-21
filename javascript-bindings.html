@@ -1,0 +1,85 @@
+<script src="https://goldenstaterepro.exavault.com/ev-uploader"></script>
+<script>
+jQuery(document).ready(function($) {
+  var baseFilePath = "goldenstate-uploads/";
+  var baseDownloadLink = "https://goldenstaterepro.exavault.com/p/";
+
+  function updateMessage(container, message) {
+    $(container).text(message);
+  }
+
+  function slugify(text) {
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+      .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
+  }
+
+  $('#input_3_7').on('click', function() {
+    var message = "";
+    if ($('#choice_3_7_0:checked', '#gform_3').length >0){
+      message = "You are uploading your project to our San Jose location";
+    } else {
+      message = "You are uploading your project to our Redwood City location";
+    }
+    updateMessage("#location-info", message);
+  });
+
+  $('#gform_submit_button_3').on('click',function(event) {
+    event.preventDefault();
+
+    if ( $('input[name=input_7]:checked', '#gform_3').val() ){
+      updateMessage("#location-message", "");
+
+      if ($('.queue-item').length > 0) {
+        $('#gform_submit_button_3').prop('disabled', true);
+
+        updateMessage("#uploader-message", "Wait a moment while your files upload.");
+
+        var unique_id = Math.random().toString(10).substr(2, 5);
+
+        var companyName = slugify($('.company-name :input').val());
+        var projectName = slugify($('#input_3_16').val());
+        var foldername = $('input[name=input_7]:checked', '#gform_3').val() + "/" + companyName + "-" + projectName;
+
+        var filePath = baseFilePath + foldername;
+        var zipPath = filePath + "/" + projectName + "_" + unique_id;
+        var fileNames = new Array();
+
+        $('.queued-file').each(function(i, item) {
+          fileNames.push(filePath + '/'  + $(item).text());
+        });
+
+        var downloadLink = baseDownloadLink + zipPath + ".zip";
+        $('#input_3_36').val(downloadLink);
+        $('#input_3_49').val(unique_id);
+
+        $EvUploader.upload(foldername, function() {
+          $.ajax({
+            type: "POST",
+            url: "/wp-json/exavault/v1/compress",
+            dataType:'text',
+            data: {
+              filePaths: fileNames,
+              archivePath: zipPath
+            },
+            success: function(data) {
+              updateMessage("#uploader-message", "Files uploaded successfully");
+              $("#gform_3").submit();
+            },
+            error: function(data) {
+              updateMessage("#uploader-message", 
+               "Something went wrong, please try again!");
+              $("#gform_submit_button_3").prop( "disabled", 
+              false );
+            }
+          });
+        });
+
+      } else { updateMessage("#uploader-message", "Select your files."); }
+    } else { updateMessage("#location-message", "Select a location"); }
+  });
+});
+</script>
