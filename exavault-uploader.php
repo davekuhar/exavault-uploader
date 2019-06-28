@@ -20,10 +20,10 @@
   }
 
   function compress_exavault_files() {
-    $apiKey = 'goldenstaterepro-c6L6JqZao64819bf5AYt2';
+    $apiKey = 'XXXXXX';
     $apiUrl = 'https://api.exavault.com';
-    $username = 'goldenstaterepro';
-    $password = '$$1020Commercial103';
+    $username = 'XXXXXX';
+    $password = 'XXXXXX';
 
     
     $filesPath = $_POST['filePaths'];
